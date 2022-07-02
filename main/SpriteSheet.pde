@@ -23,6 +23,8 @@ class Spritesheet{
     time.setTimeInterval(interval);
   }
   public Spritesheet(PImage image, int a){
+        System.out.println("i hatgase poOPPEOSPOGye");
+
     x = 0;
     y = 0;
     w = 0;
@@ -77,5 +79,13 @@ class Spritesheet{
     } else {
       return false;
     }
+  }
+}
+
+PImage[] sprites;
+{
+  sprites = new PImage[TILECOUNT];
+  for (File sfile : new File(RESOURCEPATH + File.separator + "tiles").listFiles()) {
+    sprites[Integer.parseInt(sfile.getName().substring(5,sfile.getName().length()-4))] = loadImage(sfile.getAbsolutePath());
   }
 }

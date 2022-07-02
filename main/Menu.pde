@@ -1,4 +1,4 @@
-class Menu implements Clickable,Drawable {
+class Menu implements Clickable, Drawable {
   //variables
   float x;
   float y;
@@ -9,6 +9,8 @@ class Menu implements Clickable,Drawable {
   
   //constructor
   public Menu(float x, float y, int menulength, int bh, int bw, int s) {
+      System.out.println("i hatgdgase ye");
+
     this.x = x;
     this.y = y;
     this.buttonh = bh;

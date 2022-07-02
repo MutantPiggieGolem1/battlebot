@@ -1,0 +1,189 @@
+import java.awt.Point;
+
+public static Layer getLayer(LayerType t, Maps p) {
+  switch (t) {
+    case BASE:
+      return new Layer(p);
+    case OVERLAY:
+      return new Layer(p);
+    case INTERACT:
+      return new InteractLayer(p);
+    case COLLIDE:
+      return new CollideLayer(p);
+    case TOP:
+      return new Layer(p);
+  }
+}
+
+class Layer {
+  //generic variables
+  Maps parent;
+  float scale;
+  int rowsize,colsize;
+
+  //variables for the movement
+  final int tileh = 16;
+  final int tilew = 16;
+  final int tilehh = tileh/2;
+  final int tileww = tilew/2;
+  int framecounter = 0;
+
+  //variables for the layer code
+  private int[][] tileArray;
+  private Tile [][] layerTiles;
+
+  //arraylists for types of tiles within a layer
+  ArrayList<Tile> portalTiles = new ArrayList<Tile>();
+  ArrayList<Tile> grassTiles = new ArrayList<Tile>();
+
+  //constructor
+  public Layer() {
+  
+  }
+  
+  
+  
+  void draw() {
+    //loops through all tiles and draws, skipping transparent tiles because lag
+    for (int i = 0; i < rowsize; i++) {
+      for (int k = 0; k < colsize; k++) {
+        if(tileArray[i][k] != 486){
+          layerTiles[i][k].draw();
+        }  
+      }
+    }
+  }
+  
+  Tile getTile(int lx, int ly){
+    return layerTiles[lx][ly];
+  }
+  
+  //layer generation
+  void generateBaseLayer(int[][] tileArray) {
+    //prepping the tile array for use
+    this.tileArray = tileArray;
+    rowsize = tileArray.length;
+    colsize = tileArray[0].length;
+    //layerTiles logs all tiles in the layer as a 2d array
+    layerTiles = new Tile[rowsize][colsize];
+    //navigating the rows
+    for (int row = 0; row < rowsize; row++) {
+      //navigating the columns
+      for(int col = 0; col < colsize; col++) {
+        //skips transparent tiles
+        if(tileArray[row][col] != 486) {
+          TileType type = TileType.DEFAULT;
+          if (tileTypeCheck(portalSprites, tileArray, row, col)) {
+            type = TileType.PORTAL;
+          } else if (tileTypeCheck(grassSprites, tileArray, row, col)) {
+            type = TileType.ENEMY;
+          }
+          Tile current = new Tile(
+            new Point(tilew*col + tileww,tileh * row + tilehh),
+            type,
+            tileTypeCheck(collidableSprites, tileArray, row, col),
+            tilesprites[tileArray[row][col]]);
+          
+          //loads tile into all relevant arrays
+          if (current.getType().equals(TileType.ENEMY)) {grassTiles.add(current);}
+          if (current.getType().equals(TileType.PORTAL)) {portalTiles.add(current);}
+          //saves the tile to the layerTiles and moves on
+          layerTiles[row][col] = current;
+        }
+      }
+    }
+      
+  }
+
+  //generic check for whether a tile matches a type
+  boolean tileTypeCheck (int[] spriteArray, int[][] arrayoftiles, int row, int col) {
+    return binarySearch(spriteArray, arrayoftiles[row][col], 0, spriteArray.length - 1);
+  }
+  
+  //ALWAYS set min = 0 and max = [array].length - 1
+  //for sorting tiles into types such as collidable, grass, etc
+  boolean binarySearch(int[] arr, int goal, int min, int max) {
+    int index = (min + max)/2;
+    if (min > max) {
+      return false;
+    }
+    if (arr[index] == goal) {
+      return true;
+    } else if (arr[index] < goal) {
+      return binarySearch(arr, goal, index + 1, max);
+    } else if (arr[index] > goal) {
+      return binarySearch(arr, goal, min, index - 1);
+    }
+    return false;
+  }
+
+  //update loop
+  void update() {
+    this.draw();
+    this.fullMovement();
+  }
+
+  //BASE MOVEMENT THINGS
+  //all collision tracking is based around the sensing of the collidelayer
+  //all "default" (non-colliding) layers simply read the collidelayer's information and follow its directions
+  //there's no reason for any default layer to check its own collisions; it only causes problems
+  void fullMovement() {
+    //if movement is occurring at the moment
+    //increases framecounter so this can only occur a certain number of times
+    framecounter++;
+    //calling movement funcs for tiles
+    if (keydirection.containsKey(key)) move(keydirection.get(key));
+   
+    //when movement is finished
+    if (framecounter == 8) {
+      //unlocks movement and resets counter so a new movement can begin
+      framecounter = 0;
+      if (checkOverlap(grassTiles, player) >= 0) {
+        Random r = new Random();
+        int t = r.nextInt(7) + 1;
+        if (t == 1) {
+          currentbattle = new Battle(player,new Monster("AirA", 800, 250));
+          GameState.currentState = GameStates.COMBAT;
+        }
+      }
+      move(Direction.NONE);
+    }
+  }
+  
+  void move(Direction dir) {
+    switch (dir) {
+      case UP:
+        translate(0,-4);
+      break;
+      case DOWN:
+        translate(0,4);
+      break;
+      case LEFT:
+        translate(-4,0);
+      break;
+      case RIGHT:
+        translate(4,0);
+      break;
+      case NONE:
+      default:
+        
+    }
+  }
+  
+  //code for checking overlap w/ archetypical tiles
+  int checkOverlap(ArrayList<Tile> array, Player player) {
+    int overlapint;
+    //loops through each iteration in array
+    for (int i = 0; i < array.size(); i++) {
+      //if they're overlapping, return an associated string
+      if (array.get(i).checkCollisions(player.getLocation()) == true) {
+        //returns the index if true, returns -1 if false
+        overlapint = i;
+        return overlapint;
+      }
+    }
+    overlapint = -1;
+    return overlapint;
+  }
+}
+

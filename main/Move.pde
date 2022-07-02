@@ -2,11 +2,13 @@ class Move {
   private String name;
   private HashMap<Stat,Float> stats;
   private MoveType movetype;
-  private Type type;
+  private MonsterType type;
   private Monster parent;
   
   //constructor for everyday use
   public Move(Monster parent, String name) {
+        System.out.println("i hatgaSDjgadGse ye");
+
     this.name = name;
     this.parent = parent;
     JSONObject basestats = moveDatabase.get(name);
@@ -16,7 +18,7 @@ class Move {
       this.stats.put(stat,basestats.getFloat(sstat));
     }
     if (this.stats == null) throw new Error("Move '"+name+"' was not in the moves databse.");
-    this.type = Type.valueOf(basestats.getString("type").toUpperCase());
+    this.type = MonsterType.valueOf(basestats.getString("type").toUpperCase());
     this.movetype = MoveType.valueOf(basestats.getString("movetype").toUpperCase());
   }
   

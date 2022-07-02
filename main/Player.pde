@@ -9,12 +9,14 @@ public PImage[] createCharacterSprites(int playerNum){
   //for loop that will go through each column
   for(int c = tilenum; c<tilenum+4; c++){
     for(int r = 0; r< 3;r++){
-      characterSprites[i] = tilesprites[c + (r*27)];
+      characterSprites[i] = sprites[c + (r*27)];
       i++;
     }
   }
   return characterSprites;
 }
+
+import java.awt.Dimension;
 
 enum PlayerMovementStates{
   UP,
@@ -31,30 +33,28 @@ enum PlayerMovementStates{
 
 //player class
 class Player extends Character {
-  
-  PlayerMovementStates direction = PlayerMovementStates.RIGHT;
-  
+  private PlayerMovementStates direction = PlayerMovementStates.RIGHT;
+  private Location location = new Location(400,400);
+  private final Dimension dim = new Dimension(16,16);
 
-  PImage[] sprites; //character sprites
-  //private Timer keyTimer = new Timer(40);
-  final int h = 16;
-  final int w = 16;
-  int steps = 0; //steps taken during gameplay
-  int x = 400;
-  int y = 400;
-  final int scale = 2;
+  private PImage[] sprites; //character sprites
+  private Spritesheet animations;
 
-  HashMap<String,Integer> items = new HashMap<String,Integer>();
-  ArrayList<Monster> monsters = new ArrayList<Monster>();
-  Spritesheet animations;
-  int selectedmonster;
+  private HashMap<String,Integer> inventory = new HashMap<String,Integer>();
+  private ArrayList<Monster> monsters = new ArrayList<Monster>();
+  private int selectedmonster;
   
+  public Player() {
+    this(createCharacterSprites(0),new ArrayList<Monster>());
+  }
   public Player(PImage[] sprites,ArrayList<Monster> mnstrs){
+        System.out.println("i hatGNAANGiohGRgase ye");
+
     this.monsters = (ArrayList)mnstrs.clone();
     this.selectedmonster = 0;
     this.sprites = sprites;
     animations = new Spritesheet(this.sprites, 120);
-    animations.setxywh(x, y, w*scale, h*scale);
+    animations.setxywh(this.location.loc.x, this.location.loc.y, dim.width, dim.height);
     animations.createAnimation("walkLeft", new int[]{0,1,2});
     animations.createAnimation("walkDown", new int[]{3,4,5});
     animations.createAnimation("walkUp", new int[]{6,7,8});
@@ -66,16 +66,16 @@ class Player extends Character {
   }
 
   public void addItem(String id){
-    Integer a = items.get(id);
-    items.put(id, a == null ? 1 : a+1);
+    Integer a = inventory.get(id);
+    inventory.put(id, a == null ? 1 : a+1);
   }
   public void useItem(String id){
-    Integer a = items.get(id);
+    Integer a = inventory.get(id);
     if (a != null && a > 0){
       if (a-1 == 0){
-        items.remove(id);
+        inventory.remove(id);
       }else{
-        items.put(id, a-1); // "healthPotion": 0
+        inventory.put(id, a-1); // "healthPotion": 0
       }
       HashMap<Stat,Float> stats = itemDatabase.get(id);
       this.getSelectedMonster().modStats(stats);
@@ -86,11 +86,15 @@ class Player extends Character {
   
   public void summonMonsterStack(String[] idarray) {
     for (int i = 0; i < idarray.length; i++) {
-      addMonster(generateNewMonster(idarray[i]));
+      addMonster(new Monster(idarray[i],400,400));
     }
   }
   
-  void addMonster(Monster m) {
+  public Location getLocation() {
+    return this.location;
+  }
+  
+  public void addMonster(Monster m) {
       monsters.add(m);
   }
   
@@ -126,16 +130,16 @@ class Player extends Character {
     
     switch(direction){
       case MOVEUP:
-        moveUp();
+        move(Direction.UP);
       break;
       case MOVEDOWN:
-        moveDown();
+        move(Direction.DOWN);
       break;
       case MOVELEFT:
-        moveLeft();
+        move(Direction.LEFT);
       break;
       case MOVERIGHT:
-        moveRight();
+        move(Direction.RIGHT);
       break;
       case UP:
         animations.play("lookUp");
@@ -158,29 +162,46 @@ class Player extends Character {
     }
   }
   
-  void moveUp(){
-    animations.play("walkUp");
-    if(animations.finished("walkUp")){
-      direction = PlayerMovementStates.UP;
-    }
+  void move(Direction dir){
+    Location goal = new Location(this.location);
+    switch (dir) {
+      case UP:
+        goal.translate(0,4);
+        animations.play("walkUp");
+        if(animations.finished("walkUp")){
+          direction = PlayerMovementStates.UP;
+        }
+      break;
+      case DOWN:
+        goal.translate(0,-4);
+        animations.play("walkDown");
+        if(animations.finished("walkDown")){
+          direction = PlayerMovementStates.DOWN;
+        }
+      break;
+      case LEFT:
+        goal.translate(4,0);
+        animations.play("walkLeft");
+        if(animations.finished("walkLeft")){
+          direction = PlayerMovementStates.LEFT;
+        }
+      break;
+      case RIGHT:
+        goal.translate(-4,0);
+        animations.play("walkRight");
+        if(animations.finished("walkRight")){
+          direction = PlayerMovementStates.RIGHT;
+        }
+      break;
+      case NONE:
+      default:
+      
+    } 
+    if (!maps.get(currentmap).checkCollisions(goal)) this.location = goal;
   }
-  void moveDown(){
-    animations.play("walkDown");
-    if(animations.finished("walkDown")){
-      direction = PlayerMovementStates.DOWN;
-    }
-  }
-  void moveLeft(){
-    animations.play("walkLeft");
-    if(animations.finished("walkLeft")){
-      direction = PlayerMovementStates.LEFT;
-    }
-  }
-  void moveRight(){
-    animations.play("walkRight");
-    if(animations.finished("walkRight")){
-      direction = PlayerMovementStates.RIGHT;
-    }
+  
+  public void teleport(Location l) {
+    this.location = new Location(l);
   }
 }
   

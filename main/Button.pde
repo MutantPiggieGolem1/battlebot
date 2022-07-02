@@ -12,6 +12,8 @@ class Button implements Clickable,Drawable {
   
   //menu button
   public Button(Menu m, float x, float y, float h, float w, String f) { //this, this.x + 50, tempy, buttonh, buttonw, "0"
+      System.out.println("i zdfhate ye");
+
     this.x = x;
     this.y = y;
     this.h = h;
@@ -81,16 +83,16 @@ class Button implements Clickable,Drawable {
         warn("Empty function has been run!");
       break;
       case "useitem"://use an item
-        if (player.items.containsKey(this.txt.split("x")[0].trim()) && player.items.get(this.txt.split("x")[0].trim()) > 0){ // more than 0 items (check database instead of button)
+        if (player.inventory.containsKey(this.txt.split("x")[0].trim()) && player.inventory.get(this.txt.split("x")[0].trim()) > 0){ // more than 0 items (check database instead of button)
           player.useItem(this.txt.split("x")[0].trim());
           currentbattle.switchState(BattleStates.AI);
         }
       break;
       case "toggle":// enter/exit menu
         if (GameState.currentState == GameStates.WALKING) {
-          GameState.switchState(GameStates.MENU);
+          GameState.currentState = GameStates.MENU;
         } else if (GameState.currentState == GameStates.MENU) {
-          GameState.switchState(GameStates.WALKING);
+          GameState.currentState = GameStates.WALKING;
         }
       break;
       case "return":// return to the actions menu

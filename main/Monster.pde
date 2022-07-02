@@ -1,7 +1,7 @@
 class Monster {
   //variables
   private String id;
-  private Type type;
+  private MonsterType type;
   private int level;
   private JSONObject basestats;
   private HashMap<Stat,Float> stats;
@@ -22,12 +22,14 @@ class Monster {
   
   //constructor
   public Monster(String id, float x, float y) {
+    System.out.println("i hatgazhagse ye");
+
     JSONObject data = monsterDatabase.get(id);
 
     this.image = monstersprites.get(data.getString("image"));
     this.id = id;
     this.level = 1;
-    this.type = Type.valueOf(data.getString("type").toUpperCase());
+    this.type = MonsterType.valueOf(data.getString("type").toUpperCase());
     this.basestats = JSONCopy(data).setFloat("agility",1.0f);
     this.stats = new HashMap<Stat,Float>();
     for (Stat stat : Stat.values()) {

@@ -14,7 +14,13 @@ enum BattleStates {
   AIANIMATION
 }
 
+void startBattle(Monster e) {
+  currentbattle = this.new Battle(player,e);
+  GameState.currentState = GameStates.COMBAT;
+}
+
 class Battle {
+
   private Player player1;
   private Player player2;
   private Monster enemy2;
@@ -30,6 +36,8 @@ class Battle {
     init();
   }
   public Battle(Player p1, Monster e2){
+        System.out.println("i hatgase ye");
+
     this.player1 = p1;
     this.enemy2 = e2;
     this.battlestate = BattleStates.ENTRY;
@@ -80,7 +88,7 @@ class Battle {
     this.menus.put(BattleStates.BATTLEBOT,botmenu);
   
     Menu itemmenu;
-    itemmenu = new Menu(625, 520, this.player1.items.size()+1, 40, 400, 2);
+    itemmenu = new Menu(625, 520, this.player1.inventory.size()+1, 40, 400, 2);
     itemmenu.buttons.get(0).txt = "Return to Menu";
     itemmenu.buttons.get(0).func = "return";
     for (int i = 1; i < itemmenu.buttons.size(); i++) {
@@ -132,7 +140,7 @@ class Battle {
       case ITEM:
         //will produce a menu of what items you have, should be reoptimized
         Menu itemmenu = this.menus.get(BattleStates.ITEM);
-        Object[] itemsKeys = this.player1.items.keySet().toArray();
+        Object[] itemsKeys = this.player1.inventory.keySet().toArray();
         
         Iterator<Button> itemz = itemmenu.buttons.iterator();
         int i = -1;
@@ -142,7 +150,7 @@ class Battle {
           if (i == 0) continue; // skip the first one
           if (i <= itemsKeys.length) { // offset the skip
             String itemi = (String)itemsKeys[i-1];
-            next.txt = itemi+" x "+this.player1.items.get(itemi);
+            next.txt = itemi+" x "+this.player1.inventory.get(itemi);
           } else {
             itemz.remove();
           }
