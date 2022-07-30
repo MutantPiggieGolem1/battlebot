@@ -11,13 +11,13 @@ class GroundItem {
   }
   
   void draw(){
-    image(this.sprite,this.parent.x,this.parent.y,this.sprite.width *2, this.sprite.height*2);
+    image(this.sprite,this.parent.location.loc.x,this.parent.location.loc.y,this.sprite.width *2, this.sprite.height*2);
   }
   
-  public void update(Player player){
-    if (this.parent.checkOverlap(player)){
-      player.addItem(this.id);
-      dqueue.add(this);
-    }
+  public void update(Player player) {
+    //if (this.parent.checkOverlap(player)){
+    //  player.addItem(this.id);
+    //  dqueue.add(this);
+    //}
   }
 }

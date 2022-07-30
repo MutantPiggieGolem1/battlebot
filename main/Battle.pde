@@ -14,7 +14,12 @@ enum BattleStates {
   AIANIMATION
 }
 
-class Battle {
+void startBattle(Monster e) {
+  currentbattle = this.new Battle(player,e);
+  GameState.currentState = GameStates.COMBAT;
+}
+
+public class Battle {
   private Player player1;
   private Player player2;
   private Monster enemy2;

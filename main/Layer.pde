@@ -14,13 +14,12 @@ class Layer {
   //variables for the layer code
   private int[][] tileArray;
   private Tile [][] layerTiles;
-  final int layerscale = 2;
   boolean lock = false;
 
   //arraylists for types of tiles within a layer
-  ArrayList<Tile> collidableTiles = new ArrayList<Tile>();
-  ArrayList<Tile> portalTiles = new ArrayList<Tile>();
-  ArrayList<Tile> grassTiles = new ArrayList<Tile>();
+  ArrayList<Tile> collideTiles = new ArrayList<Tile>();
+  ArrayList<Portal> portalTiles = new ArrayList<Portal>();
+  ArrayList<Grass> grassTiles = new ArrayList<Grass>();
 
   //constructor
   public Layer() {
@@ -57,19 +56,28 @@ class Layer {
         //skips transparent tiles
         if(tileArray[row][col] != 486) {
           //creates a new tile and assigns values
-          Tile current = new Tile((tilew * layerscale) * col + tileww * layerscale, (tileh * layerscale) * row + tilehh * layerscale, false, false, tilesprites[tileArray[row][col]], layerscale);
-          //these code sets all check if the tile fits a certain archetype, as listed
-          current.collide = tileTypeCheck(collidableSprites, tileArray, row, col);
-          current.portal = tileTypeCheck(portalSprites, tileArray, row, col);
-          current.grass = tileTypeCheck(grassSprites, tileArray, row, col);
-          //loads tile into all relevant arrays
-          loadAll(current);
+          Integer tileid = tileArray[row][col];
+          Location loc = new Location(tilew * col + tileww, tileh * row + tilehh);
+          Tile current;
+          if (collidableTiles.contains(tileid)) {
+            current = new Tile(tileid, loc, true);
+            collideTiles.add(current);
+          } else if (specialTiles.get(TileType.ENEMY).contains(tileid)) {
+            current = new Grass(tileid, loc);
+            grassTiles.add((Grass)current);
+          }
+          //else if (specialTiles.get(TileType.PORTAL).contains(tileid)) {
+          //  current = new Portal();
+          //  portalTiles.add((Portal)current);
+          //} 
+          else {
+            current = new Tile(tileid, loc, false);
+          }
           //saves the tile to the layerTiles and moves on
           layerTiles[row][col] = current;
         }
       }
     }
-      
   }
 
   //generic check for whether a tile matches a type
@@ -94,30 +102,8 @@ class Layer {
     return false;
   }
 
-  //add tiles to various type-oriented arraylists
-  void loadAll (Tile tile) {
-    loadCollide(tile);
-    loadPortal(tile);
-    loadGrass(tile);
-  }
-
-  //functions that save the archetypical tiles to their respective special arrays
-  //these arrays are used later when checking if the player is near/touching a type of tile
-  void loadCollide(Tile tile) {
-    if (tile.collide) {collidableTiles.add(tile);}
-  }
-  
-  void loadPortal(Tile tile) {
-    if (tile.portal) {portalTiles.add(tile);}
-  }
-  
-  void loadGrass(Tile tile) {
-    if (tile.grass) {grassTiles.add(tile);}
-  }
-
   //update loop
   void update() {
-    this.draw();
   }
 
   //start a new movement by returning a key
@@ -131,12 +117,12 @@ class Layer {
   }
   
   //code for checking overlap w/ archetypical tiles
-  int checkOverlap(ArrayList<Tile> array, Player player, String text) {
+  int checkOverlap(ArrayList<? extends Tile> array, Player player) {
     int overlapint;
     //loops through each iteration in array
     for (int i = 0; i < array.size(); i++) {
       //if they're overlapping, return an associated string
-      if (array.get(i).checkOverlap(player) == true) {
+      if (array.get(i).checkCollisions(player.getLocation()) == true) {
         //returns the index if true, returns -1 if false
         overlapint = i;
         return overlapint;

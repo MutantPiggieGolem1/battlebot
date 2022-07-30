@@ -1,37 +1,86 @@
-class Tile {
-  //variables
-  PImage img;
-  boolean collide;
-  boolean portal;
-  boolean grass;
-  private float x;
-  private float y;
-  int counting = 0;
-
-
-  //build with scale
-  public Tile(float x, float y, boolean c, boolean p, PImage img, int sc) {
-    this.x = x;
-    this.y = y;
-    this.img = img;
-    collide = c;
-    portal = p;
+public Tile create(Integer id, Location loc) {
+  if (collidableTiles.contains(id)) {
+    return new Tile(id, loc, true);
+  } else if (specialTiles.get(TileType.ENEMY).contains(id)) {
+    return new Grass(id, loc);
   }
+  //else if (specialTiles.get(TileType.PORTAL).contains(id)) {
+  //  portalDatabase
+  //  return new Portal();
+  //}
+  return new Tile(id, loc);
+}
+
+public class Tile {
+  protected PImage img;
+  protected Location location;
+  private boolean collide;
   
+  public Tile(Integer id, Location loc) {
+    this.location = loc;
+    this.img = sprites[id];
+    this.collide = false;
+  }
+  public Tile(Integer id, Location loc, boolean collides) {
+    this.location = loc;
+    this.img = sprites[id];
+    this.collide = collides;
+  }
+  protected Tile(){}
   
-  //default build
-  public Tile() {
-  
+  public Location getLocation() {
+    return this.location;
   }
   
   //checking if player is overlapping w the given tile
-  boolean checkOverlap(Player player) {
-    return this.x == player.x && this.y == player.y;
+  public boolean checkCollisions(Location loc) {
+    return this.collide && this.location.equals(loc);
   }
   
-  //draw with scales
   void draw() {
-    image(this.img, this.x, this.y, this.img.width*2, this.img.height*2);
-    
+    image(this.img, (float)this.location.loc.x, (float)this.location.loc.y, this.img.width, this.img.height);
+  }
+}
+
+class Grass extends Tile {
+  public Grass(Integer id, Location loc) {
+    super(id,loc,false);
+  }
+  
+  @Override
+  public boolean checkCollisions(Location loc) {
+    if (this.location.equals(loc)) startBattle(new Monster("AirA",0,0));
+    return false;
+  }
+}
+
+class Portal extends Tile {
+  private Location location2;
+  
+  public Portal(String portalid) {
+    JSONObject data = portalDatabase.get(portalid);
+    JSONArray loc = data.getJSONArray("location");
+    this.location = new Location(loc.getJSONObject(0));
+    this.location2= new Location(loc.getJSONObject(1));
+    this.img = sprites[data.getInt("sprite")];
+  }
+  
+  @Override
+  public boolean checkCollisions(Location loc) {
+    if (this.location.equals(loc)) {
+      player.teleport(this.location2);
+    } else if (this.location2.equals(loc)) {
+      player.teleport(this.location);
+    }
+    return false;
+  }
+  
+  @Override
+  public void draw() {
+    if (maps.get(currentmap).equals(this.location.map)) {
+      image(this.img, (float)this.location.loc.x , (float)this.location.loc.y , this.img.width, this.img.height);
+    } else if (maps.get(currentmap).equals(this.location2.map)) {
+      image(this.img, (float)this.location2.loc.x, (float)this.location2.loc.y, this.img.width, this.img.height);
+    }
   }
 }

@@ -13,7 +13,6 @@ class Monster {
   final int w = 16;
   float x = 400;
   float y = 400;
-  final int scale = 2;
   Spritesheet animations;
   Timer time;
   float speedX = 0;
@@ -42,7 +41,7 @@ class Monster {
     }
     
     animations = new Spritesheet(this.image, 120);
-    animations.setxywh(x, y, w*scale, h*scale);
+    animations.setxywh(x, y, w, h);
     int frameNum = image.width/16;
     int[] frameNums = new int[frameNum];
     for(int i = 0; i < frameNum; i++){frameNums[i] = i;}

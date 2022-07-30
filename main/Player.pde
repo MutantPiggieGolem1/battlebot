@@ -9,7 +9,7 @@ public PImage[] createCharacterSprites(int playerNum){
   //for loop that will go through each column
   for(int c = tilenum; c<tilenum+4; c++){
     for(int r = 0; r< 3;r++){
-      characterSprites[i] = tilesprites[c + (r*27)];
+      characterSprites[i] = sprites[c + (r*27)];
       i++;
     }
   }
@@ -31,18 +31,14 @@ enum PlayerMovementStates{
 
 //player class
 class Player extends Character {
-  
-  PlayerMovementStates direction = PlayerMovementStates.RIGHT;
-  
+  private PlayerMovementStates direction = PlayerMovementStates.RIGHT;
+  private Location location = new Location(400, 400);
 
   PImage[] sprites; //character sprites
   //private Timer keyTimer = new Timer(40);
   final int h = 16;
   final int w = 16;
   int steps = 0; //steps taken during gameplay
-  int x = 400;
-  int y = 400;
-  final int scale = 2;
 
   HashMap<String,Integer> items = new HashMap<String,Integer>();
   ArrayList<Monster> monsters = new ArrayList<Monster>();
@@ -101,37 +97,39 @@ class Player extends Character {
     if(!keyPressed) return;
     switch (key) {
       case 'w':
+        if (currentmap.collides(this.location.ifTranslated(0,-10))) break;
         this.direction= PlayerMovementStates.MOVEUP;
-        this.y -= 10;
+        this.location.translate(0,-10);
         origin.translate(0,10);
       break;
       case 's':
+        if (currentmap.collides(this.location.ifTranslated(0,+10))) break;
         this.direction= PlayerMovementStates.MOVEDOWN;
-        this.y += 10;
+        this.location.translate(0,+10);
         origin.translate(0,-10);
       break;
       case 'a':
+        if (currentmap.collides(this.location.ifTranslated(-10,0))) break;
         this.direction= PlayerMovementStates.MOVELEFT;
-        this.x -= 10;
+        this.location.translate(-10,0);
         origin.translate(10,0);
       break;
       case 'd':
+        if (currentmap.collides(this.location.ifTranslated(10,0))) break;
         this.direction= PlayerMovementStates.MOVERIGHT;
-        this.x += 10;
+        this.location.translate(10,0);
         origin.translate(-10,0);
       break;
     }
-    animations.setxywh(x, y, w*scale, h*scale);
+    animations.setxywh(this.location.loc.x, this.location.loc.y, w, h);
   }
   
   public void display(){
-    
     //if(animations.stoploop){
     //  animations.softReset();
     //  //keyTimer.refresh();
     //  direction = PlayerMovementStates.STATIC;
     //}
-    
     switch(direction){
       case MOVEUP:
         moveUp();
@@ -164,6 +162,7 @@ class Player extends Character {
         //animations.display(400,400);
         break;
     }
+    image(sprites[0], this.location.loc.x, this.location.loc.y);
   }
   
   void moveUp(){
@@ -189,6 +188,14 @@ class Player extends Character {
     if(animations.finished("walkRight")){
       direction = PlayerMovementStates.RIGHT;
     }
+  }
+  
+  public Location getLocation() {
+    return this.location;
+  }
+  
+  public void teleport(Location l) {
+    this.location = new Location(l);
   }
 }
   

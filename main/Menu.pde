@@ -20,9 +20,12 @@ class Menu implements Clickable,Drawable {
   }
   
   void draw() {
+    pushMatrix();
+    translate(0,0);
     for (Button button : this.buttons) {
       updateDrawables(button);
     }
+    popMatrix();
   }
   boolean isClickable() {return true;};
   float[] getDimensions() {

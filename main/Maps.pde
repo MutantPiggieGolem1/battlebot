@@ -25,7 +25,7 @@ class Maps {
     pairPortals();
     imprintLayers();
     //upon preparation, add self to a masterlist
-    masterMapList.put(this.id,this);
+    maps.put(this.id,this);
   }
   
   //constructor for currentmap, which starts blank
@@ -35,10 +35,10 @@ class Maps {
   
   //zipper the connections array with the portaltiles list into a singular, navigable hashmap
   void pairPortals() {
-    JSONArray connections = mapsDatabase.get(id).getJSONArray("connections");
-    for (int i = 0; i < connections.size(); i++) {
-      portalPairs.put(portallayer.portalTiles.get(i),masterMapList.get(connections.get(i)));
-    }
+    //JSONArray connections = mapsDatabase.get(id).getJSONArray("connections");
+    //for (int i = 0; i < connections.size(); i++) {
+    //  portalPairs.put(portallayer.portalTiles.get(i),maps.get(connections.get(i)));
+    //}
   }
   
   //allow the layers to imprint to this map
@@ -84,7 +84,7 @@ class Maps {
   
   void updateLast() {
     toplayer.update();
-    int checkit = portallayer.checkOverlap(portallayer.portalTiles, player, "portal underfoot");
+    int checkit = portallayer.checkOverlap(portallayer.portalTiles, player);
         //checking special tile-related conditions and activating events if they are met
         if (checkit >= 0) {
           //have a variable save portalTiles.get(overlapint);
@@ -98,9 +98,6 @@ class Maps {
     coverlayer.draw();
     collidelayer.draw();
     toplayer.draw();
-    for (GroundItem i : this.items) {
-      i.draw();
-    }
   }
 
   //given a 2d JSONArray, copy contents and return as a 2d intarray
@@ -118,5 +115,12 @@ class Maps {
       }
     }
     return arr;
+  }
+  
+  public boolean collides(Location l) {
+    for (Tile tile : this.collidelayer.collideTiles) {
+      if (tile.checkCollisions(l)) return true;
+    }
+    return false;
   }
 }
